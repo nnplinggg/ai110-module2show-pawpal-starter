@@ -52,9 +52,9 @@ The terminal demo in `main.py` creates one owner with two pets and combines thei
 
 ```
 Today's Schedule
-- Morning walk (Mochi) — 30 min, daily, pending
-- Give medication (Mochi) — 10 min, daily, pending
-- Feed dinner (Whiskers) — 15 min, daily, pending
+- 08:00 Morning walk (Mochi) — 30 min, daily, pending
+- 08:00 Give medication (Mochi) — 10 min, daily, pending
+- 18:00 Feed dinner (Whiskers) — 15 min, daily, pending
 ```
 
 ## 🧪 Testing PawPal+
@@ -75,14 +75,14 @@ Sample test output:
 
 ## 📐 Smarter Scheduling
 
-> Fill in once you've implemented scheduling logic.
+PawPal+ includes a small algorithmic layer to make the schedule useful as task data grows:
 
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
+| Task sorting | `Scheduler.sort_by_time()` | Orders tasks chronologically using their `HH:MM` time. |
+| Filtering | `Scheduler.filter_tasks()` | Filters by pet name, completion status, or both. |
+| Conflict handling | `Scheduler.detect_conflicts()` | Returns warning messages for pending tasks with the same exact time. |
+| Recurring tasks | `Scheduler.mark_task_complete()` and `Task.next_occurrence()` | Completing a daily or weekly task adds the next occurrence using `timedelta`. |
 
 ## 📸 Demo Walkthrough
 

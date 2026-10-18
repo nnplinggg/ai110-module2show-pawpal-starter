@@ -43,6 +43,12 @@ During the AI review of [pawpal_system.py](./pawpal_system.py), I first noticed 
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
 
+This scheduler checks for exact matching start times instead of modeling overlapping
+time ranges. That keeps conflict detection easy to understand for a short demo and
+works well when tasks have a known start time. A future version could compare each
+task's start time and duration to detect tasks that overlap even when their start
+times differ.
+
 ---
 
 ## 3. AI Collaboration
