@@ -27,7 +27,13 @@ The three core actions a user should be able to perform are:
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
 
-During the AI review of [pawpal_system.py](./pawpal_system.py), I first noticed that a plan needed to work across multiple pets rather than only one pet. I accepted the suggestion to add `Owner.get_all_tasks()` and make `Scheduler` call that method, which keeps multi-pet collection in one place. I also accepted the suggestion to add validation, completion handling, priority ordering, and an optional time limit. I rejected keeping the earlier `Schedule` class as the planning brain because the assignment specifically calls for a `Scheduler`; I replaced it with `Scheduler` and updated the UML. I verified the design by creating two pets in `main.py`, adding tasks to both, and checking that the formatted schedule includes tasks from both pets. The quick tests also verify completion and task addition directly.
+My design changed once I started thinking about what would happen when an owner had
+more than one pet. At first, task collection was too close to the scheduling logic.
+I moved that responsibility into `Owner.get_all_tasks()` and let `Scheduler` ask the
+owner for the full list. That choice made the relationship between the classes much
+clearer. I also added validation, completion tracking, priority ordering, recurrence,
+and an optional time limit as the project grew. I checked the design with two pets in
+`main.py` and with automated tests instead of assuming the class relationships worked.
 
 ---
 
@@ -38,23 +44,22 @@ During the AI review of [pawpal_system.py](./pawpal_system.py), I first noticed 
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
 - How did you decide which constraints mattered most?
 
-The scheduler considers task validity, completion status, priority, duration, available
-minutes, pet name, scheduled time, and recurring frequency. `build_schedule()` gives
-high-priority tasks preference, then uses duration and the available-minute limit to
-choose the plan. I treated priority and available time as the most important daily
-constraints because medication and other urgent care should be scheduled before lower-
-priority enrichment when the owner's time is limited.
+The scheduler looks at whether a task is valid and unfinished, how important it is,
+how long it takes, and how much time the owner has available. It also keeps track of
+the pet, start time, and recurring frequency. I made priority and available time the
+main planning constraints because urgent care, such as medication, should be selected
+before a lower-priority activity when the owner has a busy day.
 
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
 
-This scheduler checks for exact matching start times instead of modeling overlapping
-time ranges. That keeps conflict detection easy to understand for a short demo and
-works well when tasks have a known start time. A future version could compare each
-task's start time and duration to detect tasks that overlap even when their start
-times differ.
+One tradeoff is that conflict detection only checks for matching start times. For
+example, an 8:00 walk lasting 30 minutes will not conflict with an 8:15 feeding task,
+even though they overlap. I kept the exact-match rule because it is predictable and
+easy to explain at this stage. If I continued the project, I would calculate end times
+from each task's duration and detect partial overlaps too.
 
 ---
 
@@ -65,14 +70,24 @@ times differ.
 - How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
 - What kinds of prompts or questions were most helpful?
 
-I used AI to turn the UML skeleton into working dataclasses, clarify how `Scheduler` should retrieve tasks from an `Owner`, generate the terminal demo, draft focused pytest tests, and review the final UI and UML. Prompts that named the required classes, relationships, expected behavior, and test output were the most helpful. Running the tests and checking the terminal output kept the implementation grounded in observable behavior.
+The most useful AI features were being able to discuss a method, edit several related
+files, and run the tests in the same workflow. I used the assistant to compare ways of
+sorting tasks, explain `lambda` and `timedelta`, draft test cases, and check whether the
+UML still matched the code. The best prompts were specific, such as asking for a small
+method with an expected input and output. I still ran the tests and read the terminal
+output myself before treating a suggestion as finished.
 
 **b. Judgment and verification**
 
 - Describe one moment where you did not accept an AI suggestion as-is.
 - How did you evaluate or verify what the AI suggested?
 
-I did not keep the first `Schedule`-based design unchanged because it did not match the required `Scheduler` class and could encourage scheduling only one pet's tasks. I compared the suggestion with the assignment requirements, changed the design to use `Owner.get_all_tasks()`, and verified the multi-pet behavior in `main.py` and the tests in `tests/test_pawpal.py`. I also kept exact-time conflict detection instead of adding duration-overlap arithmetic because the simpler rule is easier to explain in this project.
+One suggestion I changed was an early design built around a separate `Schedule` class.
+It added another object without giving it a clear responsibility, and the assignment
+already called for a `Scheduler`. I kept `Scheduler` as the planning class and used
+`Owner.get_all_tasks()` for multi-pet task collection. I also chose exact-time conflict
+detection over a more complicated overlap algorithm because the simpler behavior fit
+the data model I had actually built.
 
 ---
 
@@ -83,19 +98,21 @@ I did not keep the first `Schedule`-based design unchanged because it did not ma
 - What behaviors did you test?
 - Why were these tests important?
 
-The six tests verify task completion, adding a task to a pet, sorting and pet filtering,
-an empty pet's schedule, daily recurrence, and duplicate-time conflict warnings. These
-tests cover the main backend algorithms and an important no-data edge case.
+I tested the actions that would cause the biggest problems if they were wrong: adding
+and completing tasks, sorting them by time, filtering by pet, creating the next daily
+task, and warning about duplicate times. I also tested a pet with no tasks because an
+empty account is a normal starting point, not an error. Together, the six tests cover
+the main scheduler behavior without depending on the Streamlit interface.
 
 **b. Confidence**
 
 - How confident are you that your scheduler works correctly?
 - What edge cases would you test next if you had more time?
 
-My confidence level is 4 out of 5. The suite passes with six tests, and the terminal
-demo exercises the same methods with two pets. I would next test weekly recurrence,
-invalid time strings, tasks with different start times that overlap by duration, and
-Streamlit button interactions.
+My confidence level is 4 out of 5. All six tests pass, and the terminal demo exercises
+the same methods with two pets. I am leaving one star open because the Streamlit
+interactions are not covered by automated tests and the conflict rule does not catch
+partially overlapping tasks. Those would be my next testing priorities.
 
 ---
 
@@ -105,25 +122,27 @@ Streamlit button interactions.
 
 - What part of this project are you most satisfied with?
 
-I am most satisfied with the separation between data objects and scheduling behavior.
-The owner and pet classes manage relationships, while `Scheduler` handles collection,
-ordering, filtering, recurrence, and warnings. That made the algorithms easy to test
-without needing to run the Streamlit interface.
+I am most satisfied that the project stayed understandable as I added features. `Owner`
+and `Pet` handle the relationships, `Task` holds care details, and `Scheduler` handles
+the planning decisions. Because those responsibilities are separate, I could test the
+algorithms directly without launching Streamlit every time.
 
 **b. What you would improve**
 
 - If you had another iteration, what would you improve or redesign?
 
-I would introduce a typed time or datetime value and model task end times so conflicts
-could detect real overlaps. I would also add UI controls for editing and completing
-existing tasks instead of focusing mainly on task creation.
+With another iteration, I would store start times as real time or datetime values and
+calculate end times for better conflict detection. I would also add editing and deletion
+controls and write Streamlit interaction tests so the interface has the same level of
+coverage as the backend.
 
 **c. Key takeaway**
 
 - What is one important thing you learned about designing systems or working with AI on this project?
 
-I learned that being the lead architect means checking whether an AI suggestion fits
-the requirements and the existing model before accepting it. Separate phase-focused
-chat sessions helped keep implementation, testing, and documentation questions clear,
-but the final decisions still came from comparing suggestions with the code, tests, and
-user-facing behavior.
+Using separate chats for design, algorithms, testing, and final polish helped me keep
+each conversation focused. I could give the assistant only the context needed for that
+phase and avoid mixing old ideas into the current task. My biggest takeaway is that the
+AI can move quickly, but I still have to act as the lead architect: define the goal,
+question suggestions, keep the class responsibilities clean, and verify the result with
+tests and real output.

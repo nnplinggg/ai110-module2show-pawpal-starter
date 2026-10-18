@@ -85,26 +85,72 @@ else:
     st.info("Add a pet before scheduling a care task.")
 
 
+pending_tasks = scheduler.get_pending_tasks()
+if pending_tasks:
+    st.subheader("Complete a task")
+    task_to_complete = st.selectbox(
+        "Choose a completed task",
+        pending_tasks,
+        format_func=lambda task: (
+            f"{task.time} — {task.description} ({task.pet_name})"
+        ),
+    )
+    if st.button("Mark task complete"):
+        next_task = scheduler.mark_task_complete(task_to_complete)
+        if next_task:
+            st.success(
+                f"Completed {task_to_complete.description}. The next "
+                f"{next_task.frequency} task is due {next_task.due_date}."
+            )
+        else:
+            st.success(f"Completed {task_to_complete.description}.")
+
+
 all_tasks = owner.get_all_tasks()
 if all_tasks:
     st.subheader("Current tasks")
-    st.table(
-        [
-            {
-                "Pet": task.pet_name,
-                "Task": task.description,
-                "Duration (min)": task.duration_minutes,
-                "Time": task.time,
-                "Repeats": task.frequency,
-                "Priority": task.priority,
-                "Completed": task.completed,
-            }
-            for task in scheduler.sort_by_time(all_tasks)
-        ]
+
+    filter_col1, filter_col2 = st.columns(2)
+    with filter_col1:
+        pet_filter = st.selectbox(
+            "Filter by pet", ["All pets"] + [pet.name for pet in owner.pets]
+        )
+    with filter_col2:
+        status_filter = st.selectbox(
+            "Filter by status", ["All tasks", "Pending", "Completed"]
+        )
+
+    completed_filter = {
+        "All tasks": None,
+        "Pending": False,
+        "Completed": True,
+    }[status_filter]
+    visible_tasks = scheduler.filter_tasks(
+        pet_name=None if pet_filter == "All pets" else pet_filter,
+        completed=completed_filter,
     )
 
+    if visible_tasks:
+        st.table(
+            [
+                {
+                    "Pet": task.pet_name,
+                    "Task": task.description,
+                    "Duration (min)": task.duration_minutes,
+                    "Time": task.time,
+                    "Due date": task.due_date.isoformat(),
+                    "Repeats": task.frequency,
+                    "Priority": task.priority,
+                    "Completed": task.completed,
+                }
+                for task in scheduler.sort_by_time(visible_tasks)
+            ]
+        )
+    else:
+        st.info("No tasks match these filters.")
+
     for warning in scheduler.detect_conflicts():
-        st.warning(warning)
+        st.warning(f"{warning} Consider moving one task to a different time.")
 else:
     st.info("No tasks yet. Add one above.")
 

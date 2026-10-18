@@ -26,19 +26,19 @@ classDiagram
         +mark_complete() None
         +is_valid() bool
         +format_for_schedule() str
-        +next_occurrence() Task
+        +next_occurrence() Task?
     }
 
     class Scheduler {
         +Owner owner
         +get_all_tasks() list~Task~
         +get_pending_tasks() list~Task~
-        +sort_by_time(tasks: list~Task~) list~Task~
-        +filter_tasks(pet_name: str, completed: bool) list~Task~
-        +mark_task_complete(task: Task) Task
+        +sort_by_time(tasks: list~Task~?) list~Task~
+        +filter_tasks(pet_name: str?, completed: bool?) list~Task~
+        +mark_task_complete(task: Task) Task?
         +detect_conflicts() list~str~
-        +build_schedule(available_minutes: int) list~Task~
-        +format_schedule(available_minutes: int) str
+        +build_schedule(available_minutes: int?) list~Task~
+        +format_schedule(available_minutes: int?) str
     }
 
     Owner "1" --> "0..*" Pet : has

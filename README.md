@@ -1,6 +1,7 @@
 # PawPal+ (Module 2 Project)
 
-You are building **PawPal+**, a Streamlit app that helps a pet owner plan care tasks for their pet.
+**PawPal+** is a Streamlit app that helps pet owners organize care tasks and
+build a practical daily plan.
 
 ## Scenario
 
@@ -10,17 +11,18 @@ A busy pet owner needs help staying consistent with pet care. They want an assis
 - Consider constraints (time available, priority, owner preferences)
 - Produce a daily plan and explain why it chose that plan
 
-Your job is to design the system first (UML), then implement the logic in Python, then connect it to the Streamlit UI.
+The project includes a Python scheduling layer, a Streamlit interface, an automated
+test suite, and a [final Mermaid UML diagram](diagrams/uml_final.mmd).
 
-## What you will build
+## Features
 
-Your final app should:
-
-- Let a user enter basic owner + pet info
-- Let a user add/edit tasks (duration + priority at minimum)
-- Generate a daily schedule/plan based on constraints and priorities
-- Display the plan clearly (and ideally explain the reasoning)
-- Include tests for the most important scheduling behaviors
+- Add multiple pets and assign care tasks to each one.
+- Record duration, priority, start time, and daily, weekly, or one-time frequency.
+- Sort tasks chronologically with `Scheduler.sort_by_time()`.
+- Filter the task table by pet and completion status with `Scheduler.filter_tasks()`.
+- Show actionable warnings when pending tasks have the same start time.
+- Mark tasks complete and automatically create the next daily or weekly occurrence.
+- Build a priority-based plan that fits within the owner's available minutes.
 
 ## Implementation Summary
 
@@ -52,8 +54,8 @@ The terminal demo in `main.py` creates one owner with two pets and combines thei
 
 ```
 Today's Schedule
-- 08:00 Morning walk (Mochi) — 30 min, daily, pending
 - 08:00 Give medication (Mochi) — 10 min, daily, pending
+- 08:00 Morning walk (Mochi) — 30 min, daily, pending
 - 18:00 Feed dinner (Whiskers) — 15 min, daily, pending
 ```
 
@@ -79,14 +81,14 @@ collected 6 items
 
 tests/test_pawpal.py ......                                           [100%]
 
-============================== 6 passed in 0.01s ===============================
+============================== 6 passed in 0.02s ===============================
 ```
 
 **Confidence level:** ★★★★☆ (4/5). The core behaviors have automated happy-path
 and edge-case coverage. A future version should add UI interaction tests and
 overlapping-duration conflict tests.
 
-## 📐 Smarter Scheduling
+## Smarter Scheduling
 
 PawPal+ includes a small algorithmic layer to make the schedule useful as task data grows:
 
@@ -102,12 +104,16 @@ PawPal+ includes a small algorithmic layer to make the schedule useful as task d
 The Streamlit UI supports the following workflow:
 
 1. Enter an owner name and add one or more pets.
-2. Select a pet, enter a task description, duration, priority, and scheduled time.
-3. Review the current tasks sorted chronologically by `Scheduler.sort_by_time()`.
-4. Read warning messages from `Scheduler.detect_conflicts()` when pending tasks
-   share an exact time.
-5. Set available minutes and generate a priority-based schedule. The terminal demo
-   also shows pet filtering, recurrence, and the warning output.
+2. Select a pet, enter a task description, duration, priority, scheduled time, and
+   recurrence frequency.
+3. Filter the current tasks by pet or completion status. The table remains sorted
+   chronologically.
+4. If pending tasks share an exact time, review the warning and move one task to
+   resolve the conflict.
+5. Mark a task complete. Daily and weekly tasks automatically create their next
+   occurrence.
+6. Set available minutes and generate a priority-based schedule. The terminal demo
+   also shows filtering, recurrence, and conflict output.
 
 Example CLI output from `python main.py`:
 
