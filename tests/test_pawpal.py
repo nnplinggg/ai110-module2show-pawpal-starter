@@ -19,6 +19,13 @@ def test_adding_task_increases_pet_task_count():
     assert len(pet.tasks) == 1
 
 
+def test_pet_with_no_tasks_has_no_pending_tasks():
+    scheduler = Scheduler(Owner(name="Jordan", pets=[Pet(name="Mochi", species="dog")]))
+
+    assert scheduler.get_pending_tasks() == []
+    assert scheduler.detect_conflicts() == []
+
+
 def test_scheduler_sorts_and_filters_tasks():
     pet = Pet(name="Mochi", species="dog")
     pet.add_task(Task("Dinner", 15, time="18:00"))

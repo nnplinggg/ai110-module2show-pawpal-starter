@@ -38,6 +38,13 @@ During the AI review of [pawpal_system.py](./pawpal_system.py), I first noticed 
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
 - How did you decide which constraints mattered most?
 
+The scheduler considers task validity, completion status, priority, duration, available
+minutes, pet name, scheduled time, and recurring frequency. `build_schedule()` gives
+high-priority tasks preference, then uses duration and the available-minute limit to
+choose the plan. I treated priority and available time as the most important daily
+constraints because medication and other urgent care should be scheduled before lower-
+priority enrichment when the owner's time is limited.
+
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
@@ -58,14 +65,14 @@ times differ.
 - How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
 - What kinds of prompts or questions were most helpful?
 
-I used AI to turn the UML skeleton into working dataclasses, clarify how `Scheduler` should retrieve tasks from an `Owner`, generate the terminal demo, and draft the two focused pytest tests. Prompts that named the required classes, relationships, and expected behavior were the most helpful.
+I used AI to turn the UML skeleton into working dataclasses, clarify how `Scheduler` should retrieve tasks from an `Owner`, generate the terminal demo, draft focused pytest tests, and review the final UI and UML. Prompts that named the required classes, relationships, expected behavior, and test output were the most helpful. Running the tests and checking the terminal output kept the implementation grounded in observable behavior.
 
 **b. Judgment and verification**
 
 - Describe one moment where you did not accept an AI suggestion as-is.
 - How did you evaluate or verify what the AI suggested?
 
-I did not keep the first `Schedule`-based design unchanged because it did not match the required `Scheduler` class and could encourage scheduling only one pet's tasks. I compared the suggestion with the assignment requirements, changed the design to use `Owner.get_all_tasks()`, and verified the multi-pet behavior in `main.py` and the tests in `tests/test_pawpal.py`.
+I did not keep the first `Schedule`-based design unchanged because it did not match the required `Scheduler` class and could encourage scheduling only one pet's tasks. I compared the suggestion with the assignment requirements, changed the design to use `Owner.get_all_tasks()`, and verified the multi-pet behavior in `main.py` and the tests in `tests/test_pawpal.py`. I also kept exact-time conflict detection instead of adding duration-overlap arithmetic because the simpler rule is easier to explain in this project.
 
 ---
 
@@ -76,10 +83,19 @@ I did not keep the first `Schedule`-based design unchanged because it did not ma
 - What behaviors did you test?
 - Why were these tests important?
 
+The six tests verify task completion, adding a task to a pet, sorting and pet filtering,
+an empty pet's schedule, daily recurrence, and duplicate-time conflict warnings. These
+tests cover the main backend algorithms and an important no-data edge case.
+
 **b. Confidence**
 
 - How confident are you that your scheduler works correctly?
 - What edge cases would you test next if you had more time?
+
+My confidence level is 4 out of 5. The suite passes with six tests, and the terminal
+demo exercises the same methods with two pets. I would next test weekly recurrence,
+invalid time strings, tasks with different start times that overlap by duration, and
+Streamlit button interactions.
 
 ---
 
@@ -89,10 +105,25 @@ I did not keep the first `Schedule`-based design unchanged because it did not ma
 
 - What part of this project are you most satisfied with?
 
+I am most satisfied with the separation between data objects and scheduling behavior.
+The owner and pet classes manage relationships, while `Scheduler` handles collection,
+ordering, filtering, recurrence, and warnings. That made the algorithms easy to test
+without needing to run the Streamlit interface.
+
 **b. What you would improve**
 
 - If you had another iteration, what would you improve or redesign?
 
+I would introduce a typed time or datetime value and model task end times so conflicts
+could detect real overlaps. I would also add UI controls for editing and completing
+existing tasks instead of focusing mainly on task creation.
+
 **c. Key takeaway**
 
 - What is one important thing you learned about designing systems or working with AI on this project?
+
+I learned that being the lead architect means checking whether an AI suggestion fits
+the requirements and the existing model before accepting it. Separate phase-focused
+chat sessions helped keep implementation, testing, and documentation questions clear,
+but the final decisions still came from comparing suggestions with the code, tests, and
+user-facing behavior.

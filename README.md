@@ -61,17 +61,30 @@ Today's Schedule
 
 ```bash
 # Run the full test suite:
-pytest
+python -m pytest
 
 # Run with coverage:
-pytest --cov
+python -m pytest --cov
 ```
 
-Sample test output:
+The test suite covers basic task completion and pet-task association, chronological
+sorting, filtering by pet, empty-pet behavior, daily recurrence, and exact-time
+conflict warnings.
+
+Successful test output:
 
 ```
-# Paste your pytest output here
+============================= test session starts ==============================
+collected 6 items
+
+tests/test_pawpal.py ......                                           [100%]
+
+============================== 6 passed in 0.01s ===============================
 ```
+
+**Confidence level:** ★★★★☆ (4/5). The core behaviors have automated happy-path
+and edge-case coverage. A future version should add UI interaction tests and
+overlapping-duration conflict tests.
 
 ## 📐 Smarter Scheduling
 
@@ -84,14 +97,37 @@ PawPal+ includes a small algorithmic layer to make the schedule useful as task d
 | Conflict handling | `Scheduler.detect_conflicts()` | Returns warning messages for pending tasks with the same exact time. |
 | Recurring tasks | `Scheduler.mark_task_complete()` and `Task.next_occurrence()` | Completing a daily or weekly task adds the next occurrence using `timedelta`. |
 
-## 📸 Demo Walkthrough
+## Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+The Streamlit UI supports the following workflow:
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+1. Enter an owner name and add one or more pets.
+2. Select a pet, enter a task description, duration, priority, and scheduled time.
+3. Review the current tasks sorted chronologically by `Scheduler.sort_by_time()`.
+4. Read warning messages from `Scheduler.detect_conflicts()` when pending tasks
+   share an exact time.
+5. Set available minutes and generate a priority-based schedule. The terminal demo
+   also shows pet filtering, recurrence, and the warning output.
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
+Example CLI output from `python main.py`:
+
+```text
+Today's Schedule
+- 08:00 Give medication (Mochi) — 10 min, daily, pending
+- 08:00 Morning walk (Mochi) — 30 min, daily, pending
+- 18:00 Feed dinner (Whiskers) — 15 min, daily, pending
+
+Tasks sorted by time:
+- 08:00 Morning walk (Mochi) — 30 min, daily, pending
+- 08:00 Give medication (Mochi) — 10 min, daily, pending
+- 18:00 Feed dinner (Whiskers) — 15 min, daily, pending
+
+Pending Mochi tasks:
+- 08:00 Morning walk (Mochi) — 30 min, daily, pending
+- 08:00 Give medication (Mochi) — 10 min, daily, pending
+
+Conflict check:
+Warning: 08:00 has both 'Morning walk' for Mochi and 'Give medication' for Mochi.
+
+Recurring task created for 2026-10-20: Morning walk
+```

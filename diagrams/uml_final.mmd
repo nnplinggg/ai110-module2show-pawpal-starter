@@ -1,0 +1,47 @@
+classDiagram
+    class Owner {
+        +str name
+        +list~Pet~ pets
+        +add_pet(pet: Pet) None
+        +get_all_tasks() list~Task~
+    }
+
+    class Pet {
+        +str name
+        +str species
+        +list~Task~ tasks
+        +add_task(task: Task) None
+        +get_tasks() list~Task~
+    }
+
+    class Task {
+        +str description
+        +int duration_minutes
+        +str frequency
+        +bool completed
+        +str priority
+        +str pet_name
+        +str time
+        +date due_date
+        +mark_complete() None
+        +is_valid() bool
+        +format_for_schedule() str
+        +next_occurrence() Task
+    }
+
+    class Scheduler {
+        +Owner owner
+        +get_all_tasks() list~Task~
+        +get_pending_tasks() list~Task~
+        +sort_by_time(tasks: list~Task~) list~Task~
+        +filter_tasks(pet_name: str, completed: bool) list~Task~
+        +mark_task_complete(task: Task) Task
+        +detect_conflicts() list~str~
+        +build_schedule(available_minutes: int) list~Task~
+        +format_schedule(available_minutes: int) str
+    }
+
+    Owner "1" --> "0..*" Pet : has
+    Pet "1" --> "0..*" Task : owns
+    Scheduler "1" --> "1" Owner : reads
+    Scheduler "1" ..> "0..*" Task : sorts and schedules
