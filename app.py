@@ -49,11 +49,14 @@ if owner.pets:
     st.write(", ".join(f"{pet.name} ({pet.species})" for pet in owner.pets))
 
     st.subheader("Add a care task")
-    selected_pet = st.selectbox(
+    selected_pet_index = st.selectbox(
         "Pet for this task",
-        owner.pets,
-        format_func=lambda pet: f"{pet.name} ({pet.species})",
+        list(range(len(owner.pets))),
+        format_func=lambda index: (
+            f"{owner.pets[index].name} ({owner.pets[index].species})"
+        ),
     )
+    selected_pet = owner.pets[selected_pet_index]
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
         task_description = st.text_input(
@@ -88,14 +91,16 @@ else:
 pending_tasks = scheduler.get_pending_tasks()
 if pending_tasks:
     st.subheader("Complete a task")
-    task_to_complete = st.selectbox(
+    selected_task_index = st.selectbox(
         "Choose a completed task",
-        pending_tasks,
-        format_func=lambda task: (
-            f"{task.time} — {task.description} ({task.pet_name})"
+        list(range(len(pending_tasks))),
+        format_func=lambda index: (
+            f"{pending_tasks[index].time} — {pending_tasks[index].description} "
+            f"({pending_tasks[index].pet_name})"
         ),
     )
     if st.button("Mark task complete"):
+        task_to_complete = pending_tasks[selected_task_index]
         next_task = scheduler.mark_task_complete(task_to_complete)
         if next_task:
             st.success(
